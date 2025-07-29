@@ -2,7 +2,7 @@
 
 ## 📡 Image Operations
 
-**Date:** 2025-07-29
+**Date:** 2025-07-29 
 **Author:** Sang-Min Byun
 
 ---
