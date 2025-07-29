@@ -26,7 +26,7 @@ The core idea:
 
 ## 🟥 Representing the image colors
 
-### 📷 Python Code
+### 📷 Python Code (color.py)
 
 This code displays the image in three formats: the original format, BGR format, and BGRA format.
 
@@ -56,3 +56,7 @@ cv2.destroyAllWindows()
 
 ```
 
+### 📷 **Result Screenshot:**
+
+![Result](result_screenshot/color_py_result.jpg)
+<br>
