@@ -428,3 +428,10 @@ cv2.destroyAllWindows()
 <br>
 
 ---
+
+## 📦 Requirements
+
+* Python
+  - opencv
+  - numpy
+  - matplotlib
