@@ -31,7 +31,7 @@ chroma_h = hsv_chroma[:,:,0]
 lower = np.array([chroma_h.min()-offset, 100, 100])
 upper = np.array([chroma_h.max()+offset, 255, 255])
 
-#--⑥ 마스크 생성 및 마스킹 후 합성
+# 마스크 생성 및 마스킹 후 합성
 mask = cv2.inRange(hsv_img, lower, upper)
 mask_inv = cv2.bitwise_not(mask)
 roi = img2[y:h, x:w]
@@ -39,8 +39,17 @@ fg = cv2.bitwise_and(img1, img1, mask=mask_inv)
 bg = cv2.bitwise_and(roi, roi, mask=mask)
 img2[y:h, x:w] = fg + bg
 
-#--⑦ 결과 출력
-cv2.imshow('material', img1)
+# 결과 출력
 cv2.imshow('finished', img2)
+
+# 이미지 저장
+cv2.imwrite('../img/finished.jpg', img2)
+
+# 이미지가 성공적으로 저장되었는지 확인
+if cv2.imwrite('../img/finished.jpg', img2):
+    print("이미지 저장 성공!")
+else:
+    print("이미지 저장 실패!")
+
 cv2.waitKey()
 cv2.destroyAllWindows()
