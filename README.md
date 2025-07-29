@@ -257,3 +257,174 @@ plt.show()
 ---
 
 <br>
+
+### 📷 Python Code (threshold_adapted.py)
+
+Adaptive thresholding is a method finds optimal threshold using pixel values around divided image.  
+The code below shows how to use adaptive thresholding.
+
+```python
+import cv2
+import numpy as np 
+import matplotlib.pyplot as plt 
+
+blk_size = 9        # 블럭 사이즈
+C = 5               # 차감 상수 
+img = cv2.imread('../img/like_lenna.png', cv2.IMREAD_GRAYSCALE) # 그레이 스케일로  읽기
+
+# ---① 오츠의 알고리즘으로 단일 경계 값을 전체 이미지에 적용
+ret, th1 = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+
+# ---② 어뎁티드 쓰레시홀드를 평균과 가우시안 분포로 각각 적용
+th2 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C,\
+                                      cv2.THRESH_BINARY, blk_size, C)
+th3 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
+                                     cv2.THRESH_BINARY, blk_size, C)
+
+# ---③ 결과를 Matplot으로 출력
+imgs = {'Original': img, 'Global-Otsu:%d'%ret:th1, \
+        'Adapted-Mean':th2, 'Adapted-Gaussian': th3}
+for i, (k, v) in enumerate(imgs.items()):
+    plt.subplot(2,2,i+1)
+    plt.title(k)
+    plt.imshow(v,'gray')
+    plt.xticks([]),plt.yticks([])
+
+plt.show()
+
+```
+
+### 📷 **Result Screenshot:**
+
+![Result](result_screenshot/threshold_adapted_py_result.jpg)
+<br>
+
+---
+
+### 📷 Python Code (threshold_adapted.py, project01.py)
+
+Chroma key is a masking method using colors. (Usually green)  
+This code composites a picture with green background to other picture with different background.
+
+```python
+import cv2
+import numpy as np
+import matplotlib.pylab as plt
+
+#--① 크로마키 배경 영상과 합성할 배경 영상 읽기
+img1 = cv2.imread('../img/man_chromakey.jpg')
+img2 = cv2.imread('../img/like_lenna.png')
+
+#--② ROI 선택을 위한 좌표 계산
+height1, width1 = img1.shape[:2]
+height2, width2 = img2.shape[:2]
+x = (width2 - width1)//2
+y = height2 - height1
+w = x + width1
+h = y + height1
+
+#--③ 크로마키 배경 영상에서 크로마키 영역을 10픽셀 정도로 지정
+chromakey = img1[:10, :10, :]
+offset = 20
+
+#--④ 크로마키 영역과 영상 전체를 HSV로 변경
+hsv_chroma = cv2.cvtColor(chromakey, cv2.COLOR_BGR2HSV)
+hsv_img = cv2.cvtColor(img1, cv2.COLOR_BGR2HSV)
+
+#--⑤ 크로마키 영역의 H값에서 offset 만큼 여유를 두어서 범위 지정
+# offset 값은 여러차례 시도 후 결정
+#chroma_h = hsv_chroma[0]
+chroma_h = hsv_chroma[:,:,0]
+lower = np.array([chroma_h.min()-offset, 100, 100])
+upper = np.array([chroma_h.max()+offset, 255, 255])
+
+#--⑥ 마스크 생성 및 마스킹 후 합성
+mask = cv2.inRange(hsv_img, lower, upper)
+mask_inv = cv2.bitwise_not(mask)
+roi = img2[y:h, x:w]
+fg = cv2.bitwise_and(img1, img1, mask=mask_inv)
+bg = cv2.bitwise_and(roi, roi, mask=mask)
+img2[y:h, x:w] = fg + bg
+
+#--⑦ 결과 출력
+cv2.imshow('chromakey', img1)
+cv2.imshow('added', img2)
+cv2.waitKey()
+cv2.destroyAllWindows()
+
+```
+
+### 📷 **Result Screenshot:**
+
+![Result](result_screenshot/chromakey_py_result.jpg)
+<br>
+
+---
+
+```python
+# 크로마키 방식을 응용한 project01
+
+import cv2
+import numpy as np
+import matplotlib.pylab as plt
+
+# 크로마키 배경 사진과 합성할 배경 사진 읽기
+img1 = cv2.imread('../img/man_crying.png')
+img2 = cv2.imread('../img/mbape_smiling.jpg')
+
+# 좌표 계산
+height1, width1 = img1.shape[:2]
+height2, width2 = img2.shape[:2]
+
+# 중앙에서 왼쪽으로 살짝 이동
+x = (width2 - width1)//5
+y = height2 - height1
+w = x + width1
+h = y + height1
+
+# 크로마키 배경 영상에서 크로마키 영역을 10픽셀 정도로 지정
+chromakey = img1[:10, :10, :]
+offset = 20
+
+# 크로마키 영역과 영상 전체를 HSV로 변경
+hsv_chroma = cv2.cvtColor(chromakey, cv2.COLOR_BGR2HSV)
+hsv_img = cv2.cvtColor(img1, cv2.COLOR_BGR2HSV)
+
+# 크로마키 영역의 H값에서 offset 만큼 여유를 두어서 범위 지정
+# offset 값은 여러차례 시도 후 결정
+# chroma_h = hsv_chroma[0]
+chroma_h = hsv_chroma[:,:,0]
+lower = np.array([chroma_h.min()-offset, 100, 100])
+upper = np.array([chroma_h.max()+offset, 255, 255])
+
+# 마스크 생성 및 마스킹 후 합성
+mask = cv2.inRange(hsv_img, lower, upper)
+mask_inv = cv2.bitwise_not(mask)
+roi = img2[y:h, x:w]
+fg = cv2.bitwise_and(img1, img1, mask=mask_inv)
+bg = cv2.bitwise_and(roi, roi, mask=mask)
+img2[y:h, x:w] = fg + bg
+
+# 결과 출력
+cv2.imshow('finished', img2)
+
+# 이미지 저장
+cv2.imwrite('../img/finished.jpg', img2)
+
+# 이미지가 성공적으로 저장되었는지 확인
+if cv2.imwrite('../img/finished.jpg', img2):
+    print("이미지 저장 성공!")
+else:
+    print("이미지 저장 실패!")
+
+cv2.waitKey()
+cv2.destroyAllWindows()
+
+```
+
+### 📷 **Result Screenshot:**
+
+![Result](result_screenshot/project01_py_result.jpg)
+<br>
+
+---
